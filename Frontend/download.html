@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style11.css">
+</head>
+
+<body>
+    
+    <!-- <div class="container"> -->
+
+        <div id="downloadDialog" class="dialog-box">
+            <h3>Select Download Option</h3>
+            <div>
+                <input type="radio" id="downloadAll" name="downloadOption" value="all">
+                <label for="downloadAll">Download All</label>
+                <button onclick="downloadCSV()">Download</button>
+            </div>
+            <div>
+                <input type="radio" id="downloadParticularDate" name="downloadOption" value="particularDate">
+                <label for="logDate">Select Date:</label>
+                <input type="date" id="logDate">
+                <button onclick="downloadCSV()">Download</button>
+            </div>
+            <div>
+                <input type="radio" id="downloadRange" name="downloadOption" value="range">
+                <label for="logDate">Select Date (optional):</label>
+                From: <input type="date" id="logDate">
+                To: <input type="date" id="logDate">
+                <button onclick="downloadCSV()">Download</button>
+            </div>
+            
+            <button onclick="closeDialog()">Cancel</button>
+        </div>
+    
+    <script>
+        document.getElementById('downloadAll').addEventListener('change', function () {
+            document.getElementById('datePicker').disabled = true;
+            document.getElementById('startDate').disabled = true;
+            document.getElementById('endDate').disabled = true;
+        });
+
+        document.getElementById('downloadParticularDate').addEventListener('change', function () {
+            document.getElementById('datePicker').disabled = false;
+            document.getElementById('startDate').disabled = true;
+            document.getElementById('endDate').disabled = true;
+        });
+
+        document.getElementById('downloadRange').addEventListener('change', function () {
+            document.getElementById('datePicker').disabled = true;
+            document.getElementById('startDate').disabled = false;
+            document.getElementById('endDate').disabled = false;
+        });
+
+        function download() {
+            // Implement download logic based on selected options
+            alert('Download started!');
+            closeDialog();
+        }
+
+        function closeDialog() {
+            document.getElementById('downloadDialog').style.display = 'none';
+        }
+
+        // Function to open the dialog box
+        function openDialog() {
+            document.getElementById('downloadDialog').style.display = 'block';
+        }
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple CRM</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="body">
+    <header>
+        <div class="logo">
+            <img class="tulas-logo" src="Tulas_Logo.webp" alt="Tula's Logo">
+        </div>
+        <nav>
+
+        </nav>
+        <div class="logo">
+            <img class="tulas-logo" src="naaclogo.webp" alt="Tula's Logo">
+        </div>
+        <nav></nav>
+        <div class="logo">
+            <img class="tulas-logo" src="Nbalogo.png" alt="Tula's Logo">
+        </div>
+        <nav></nav>
+
+        <div class="header-actions">
+            <button style="color: black;" onclick="downloadCSV()">Download All</button>
+            <button class="user-icon">👤</button>
+        </div>
+    </header>
+    <main class="table-container">
+        <table id="logTable">
+            <div class="form-container">
+                <form id="entryForm">
+                    <label for="collegeId">Enter College ID:</label>
+                    <input type="text" id="collegeId" name="collegeId" required>
+                    <button type="submit">Submit</button>
+                </form>
+            </div>
+
+            <br>
+
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>College ID</th>
+                    <th>Date</th>
+                    <th>In Time</th>
+                    <th>Out Time</th>
+                    <th>Time Duration</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Additional rows... -->
+            </tbody>
+        </table>
+    </main>
+    <div class="download-buttons">
+        <!-- <label for="logDate">Select Date (optional):</label>
+        <input type="date" id="logDate"> -->
+        <button onclick="openDialog()">Download</button>
+    </div>
+
+    <div id="downloadDialog" class="dialog-box">
+        <h3>Select Download Option</h3>
+        <div>
+            <input type="radio" id="downloadAll" name="downloadOption" value="all">
+            <label for="downloadAll">Download All</label>
+            <button onclick="downloadCSV()">Download</button>
+        </div>
+        <div>
+            <input type="radio" id="downloadParticularDate" name="downloadOption" value="particularDate">
+            <label for="logDate">Select Date:</label>
+            <input type="date" id="logDate">
+            <button onclick="downloadCSV()">Download</button>
+        </div>
+        <div>
+            <input type="radio" id="downloadRange" name="downloadOption" value="range">
+            <label for="startDate">From:</label>
+            <input type="date" id="startDate">
+            <label for="endDate">To:</label>
+            <input type="date" id="endDate">
+            <button onclick="downloadCSV()">Download</button>
+        </div>
+        <button onclick="closeDialog()">Cancel</button>
+    </div>
+
+    <script>
+        document.getElementById('entryForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const collegeId = document.getElementById('collegeId').value;
+
+            fetch('/logEntry', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ collegeId })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Convert the UTC date and time to local before updating the table
+                        data.entry.logDate = convertToLocalDate(data.entry.logDate);
+                        data.entry.inTime = convertToLocalTime(data.entry.inTime);
+                        data.entry.outTime = data.entry.outTime ? convertToLocalTime(data.entry.outTime) : '';
+
+                        updateTable(data.entry);
+                    } else {
+                        alert(data.message);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+
+            document.getElementById('collegeId').value = '';
+        });
+
+        function updateTable(entry) {
+            const tableBody = document.getElementById('logTable').querySelector('tbody');
+            const row = document.createElement('tr');
+
+            row.innerHTML = `
+        <td>${entry.studentName}</td>
+        <td>${entry.collegeId}</td>
+        <td>${entry.logDate}</td>
+        <td>${entry.inTime}</td>
+        <td>${entry.outTime || ''}</td>
+        <td>${entry.duration || ''}</td>
+    `;
+
+            tableBody.appendChild(row);
+        }
+
+        // Function to convert UTC date to local date (YYYY-MM-DD format)
+        function convertToLocalDate(utcDate) {
+            const date = new Date(utcDate);
+            return date.toLocaleDateString('en-GB', { year: 'numeric', month: '2-digit', day: '2-digit' }).split('/').reverse().join('-');
+        }
+
+        // Function to convert UTC time to local time (HH:MM:SS format)
+        function convertToLocalTime(utcTime) {
+            const time = new Date(`1970-01-01T${utcTime}Z`); // Creating a date with the time
+            return time.toLocaleTimeString('en-GB', { hour12: false });
+        }
+
+        function isValidDate(dateString) {
+            return /^\d{4}-\d{2}-\d{2}$/.test(dateString);
+        }
+
+        function downloadCSV() {
+            const downloadOption = document.querySelector('input[name="downloadOption"]:checked').value;
+            let url = '/download-csv';
+
+            if (downloadOption === 'particularDate') {
+                const logDate = document.getElementById('logDate').value;
+                if (!logDate) {
+                    alert('Please select a date.');
+                    return;
+                }
+                url += `?date=${logDate}`;
+            } else if (downloadOption === 'range') {
+                const startDate = document.getElementById('startDate').value;
+                const endDate = document.getElementById('endDate').value;
+                if (!startDate || !endDate) {
+                    alert('Please select both start and end dates.');
+                    return;
+                }
+                url += `?startDate=${startDate}&endDate=${endDate}`;
+            }
+            window.location.href = url;
+        }
+
+        function updateFormFields() {
+            const downloadAll = document.getElementById('downloadAll').checked;
+            const downloadParticularDate = document.getElementById('downloadParticularDate').checked;
+            const downloadRange = document.getElementById('downloadRange').checked;
+
+            document.getElementById('logDate').disabled = !downloadParticularDate;
+            document.getElementById('startDate').disabled = !downloadRange;
+            document.getElementById('endDate').disabled = !downloadRange;
+
+            document.getElementById('downloadAllButton').disabled = !downloadAll;
+            document.getElementById('downloadParticularDateButton').disabled = !downloadParticularDate;
+            document.getElementById('downloadRangeButton').disabled = !downloadRange;
+        }
+
+        document.getElementById('downloadAll').addEventListener('change', updateFormFields);
+        document.getElementById('downloadParticularDate').addEventListener('change', updateFormFields);
+        document.getElementById('downloadRange').addEventListener('change', updateFormFields);
+
+        updateFormFields();
+
+        function download() {
+            alert('Download started!');
+            closeDialog();
+        }
+
+        function closeDialog() {
+            document.getElementById('downloadDialog').style.display = 'none';
+        }
+
+        function openDialog() {
+            document.getElementById('downloadDialog').style.display = 'block';
+        }
+
+    </script>
+</body>
+
+</html>
