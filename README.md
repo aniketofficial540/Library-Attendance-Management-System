@@ -39,7 +39,6 @@ A smart entry‑logging solution for academic libraries. Students and faculty **
 
 **Aniket Adars, Akriti Kumari, Aditya Sharma**
 📍 Dehradun, India
-🌐 [Portfolio Website](https://your-portfolio.vercel.app)
 ✉️ [aniketofficial540@gmail.com](mailto:aniketofficial540@gmail.com)
 
 
